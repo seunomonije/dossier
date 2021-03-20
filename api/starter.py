@@ -1,6 +1,5 @@
 from lxml import html
 from bs4 import BeautifulSoup as bs
-
 import requests
 
 class IdException(Exception):
@@ -60,6 +59,15 @@ class BlockFromHackerNewsLink(Block):
       return json_result
     else:
       raise Exception("Bad JSON response from HackerNews id")
+
+class BlockFromArbitraryURL(Block):
+
+  @staticmethod
+  def get_title(url):
+    page = requests.get(url)
+    tree = html.fromstring(page.content)
+    text = tree.findtext('.//title')
+    print(text)
 
 
 def main():

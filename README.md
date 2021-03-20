@@ -6,6 +6,10 @@ Project for CPSC 439 Spring 2021.
  - [node.js](https://nodejs.org/en/)
  - [npm](https://www.npmjs.com/get-npm) (included with node)
 
+### Python dependencies
+ - [lxml](https://lxml.de/) (`pip install lxml`)
+ - requests (`pip install requests`)
+
 ## Installation
 
 1. This app runs via the [Expo CLI](https://docs.expo.io/workflow/expo-cli/). You can install the 

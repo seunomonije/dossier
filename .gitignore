@@ -11,3 +11,6 @@ app/web-build/
 
 # macOS
 .DS_Store
+
+# Environments
+env/

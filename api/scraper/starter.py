@@ -77,4 +77,5 @@ def main():
 
 
 if __name__ == '__main__':
+  # TEST
   main()

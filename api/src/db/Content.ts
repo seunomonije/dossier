@@ -40,6 +40,3 @@ contentSchema.statics.newContent = (attr: IContent) => {
 };
 
 const Content = mongoose.model<any, contentModelInterface>('Content', contentSchema);
-  'Content',
-  contentSchema
-);

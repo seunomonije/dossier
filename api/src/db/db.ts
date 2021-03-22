@@ -13,6 +13,7 @@ export const connect = () => {
     useUnifiedTopology: true,
     useCreateIndex: true,
   });
+  
   database = mongoose.connection;
   database.once('open', async () => {
     console.log('Connected to database');

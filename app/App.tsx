@@ -1,17 +1,23 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-
-//material UI component imports
+import { Switch, Route, Redirect } from "react-router-dom";
 import VideoComponent from "./components/VideoComponent"
+import { BrowserRouter } from "react-router-dom";
+import SignIn from "./components/SignIn"
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>aTEST open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-      <VideoComponent/>
-    </View>
+  	<BrowserRouter>
+	    <View style={styles.container}>
+	      <Switch>
+          	<Route path="/home" component={VideoComponent} />
+          	<Route path="/signin" component={SignIn} />
+          	<Redirect to="/home" />
+       	</Switch>
+
+	    </View>
+	</BrowserRouter>
   );
 }
 

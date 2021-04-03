@@ -11,7 +11,7 @@ export default function App() {
   return (
   	<BrowserRouter>
 	    <View style={styles.container}>
-			<Text>test text</Text>
+			<Text style = {styles.alignLeft}>Welcome, Seun</Text>
 	      <Switch>
           	<Route path="/home" component={HomeScreen}/>
           	{/*<Route path="/home"component = {videoComponent}/>*/}
@@ -27,8 +27,11 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#adb6c4',
     alignItems: 'center',
-    justifyContent: 'center',
+    //justifyContent: 'center',
   },
+  alignLeft:{
+	  textAlign:'left'
+  }
 });

@@ -5,13 +5,16 @@ import { Switch, Route, Redirect } from "react-router-dom";
 import VideoComponent from "./components/VideoComponent"
 import { BrowserRouter } from "react-router-dom";
 import SignIn from "./components/SignIn"
+import {HomeScreen} from "./components/HomeScreen";
 
 export default function App() {
   return (
   	<BrowserRouter>
 	    <View style={styles.container}>
+			<Text>test text</Text>
 	      <Switch>
-          	<Route path="/home" component={VideoComponent} />
+          	<Route path="/home" component={HomeScreen}/>
+          	{/*<Route path="/home"component = {videoComponent}/>*/}
           	<Route path="/signin" component={SignIn} />
           	<Redirect to="/home" />
        	</Switch>

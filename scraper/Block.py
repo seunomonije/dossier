@@ -10,7 +10,8 @@ class Block:
     'HN': ['title', None, None, 'url']
   }
 
-  def __init__(self, block_type, url):
+  def __init__(self, url):
+    block_type = self.__infer_block_type(url)
     self.data = self.create_block(block_type, url)
 
   def create_block(self, block_type, url):
@@ -55,6 +56,21 @@ class Block:
         result_dict[key1] = meta_dict[key2]
 
     return result_dict
+
+  # This will eventually get to the point where it should be it's own class
+  def __infer_block_type(self, url):
+    possible_types = {
+      'news': 'HN'
+    }
+
+    # Make sure we're always starting at the same place
+    if url[0:8] == 'https://':
+      url = url[8:]
+    elif url[0:7] == 'http://':
+      url = url[7:]
+    
+    arr = url.split('.')
+    return possible_types.get(arr[0])
 
   def print_block(self):
     print(self.data)

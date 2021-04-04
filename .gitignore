@@ -16,3 +16,7 @@ api/dist
 
 # Environments
 env/
+
+# Pycache
+__pycache__/
+*.pyc

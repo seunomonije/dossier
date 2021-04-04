@@ -1,22 +1,9 @@
-from lxml import html
-from bs4 import BeautifulSoup as bs
 import requests
 
 class IdException(Exception):
   pass
 
-class Block:
-  def print_block(self):
-    pass
-
-class BlockFromTwitterLink(Block):
-  """
-  Determining whether or not its better to use the API or scrape ourselves...
-  """
-  pass
-
-
-class BlockFromHackerNewsLink(Block):
+class BlockFromHackerNewsLink:
   BASE_URL = "https://hacker-news.firebaseio.com/v0/"
 
   @staticmethod
@@ -59,23 +46,3 @@ class BlockFromHackerNewsLink(Block):
       return json_result
     else:
       raise Exception("Bad JSON response from HackerNews id")
-
-class BlockFromArbitraryURL(Block):
-
-  @staticmethod
-  def get_title(url):
-    page = requests.get(url)
-    tree = html.fromstring(page.content)
-    text = tree.findtext('.//title')
-    print(text)
-
-
-def main():
-  url = input('Enter a HackerNews url: ')
-  json = BlockFromHackerNewsLink.get_json(url)
-  print(json)
-
-
-if __name__ == '__main__':
-  # TEST
-  main()

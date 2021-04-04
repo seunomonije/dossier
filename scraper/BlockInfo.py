@@ -3,4 +3,3 @@ class BlockInfo:
     self.source = source
     self.url = url
     self.json = json
-    

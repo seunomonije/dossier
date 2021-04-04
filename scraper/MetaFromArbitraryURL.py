@@ -37,3 +37,4 @@ class MetaFromArbitraryURL(object):
   def __get_description(self):
     description = self.soup.find('meta', property='og:description')
     return description['content'] if description else None
+    

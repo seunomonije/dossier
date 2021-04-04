@@ -9,7 +9,8 @@ Project for CPSC 439 Spring 2021.
 ### Python dependencies
  - [lxml](https://lxml.de/) (`pip install lxml`)
  - requests (`pip install requests`)
-
+ - BeautifulSoup (`pip install bs4`)
+ 
 ## Installation
 
 1. This app runs via the [Expo CLI](https://docs.expo.io/workflow/expo-cli/). You can install the 

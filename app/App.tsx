@@ -2,10 +2,9 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Switch, Route, Redirect } from "react-router-dom";
-import VideoComponent from "./components/VideoComponent"
 import { BrowserRouter } from "react-router-dom";
-import SignIn from "./components/SignIn"
-import {HomeScreen} from "./components/HomeScreen";
+import {Board} from "./components/Board";
+import {SignUpPage} from "./components/SignUpPage";
 
 export default function App() {
   return (
@@ -13,10 +12,8 @@ export default function App() {
 	    <View style={styles.container}>
 			<Text style = {styles.alignLeft}>Welcome, Seun</Text>
 	      <Switch>
-          	<Route path="/home" component={HomeScreen}/>
-          	{/*<Route path="/home"component = {videoComponent}/>*/}
-          	<Route path="/signin" component={SignIn} />
-          	<Redirect to="/home" />
+          	<Route path="/home" component={Board}/>
+          	<Redirect to="/signup" />
        	</Switch>
 
 	    </View>

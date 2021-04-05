@@ -49,7 +49,7 @@ export function Board() {
 
   const { currentUser, logout } = useAuth();
   const [dataList, setDataList] = useState<any>([]);
-  const username = currentUser
+  const username = currentUser.displayName
     ? currentUser.displayName.trim().toLowerCase()
     : '';
   const onSubmit = async () => {
@@ -112,7 +112,10 @@ export function Board() {
         .then((res) => res.json())
         .catch((err) => console.error(err));
 
-      setDataList(res.content);
+      if (res) {
+        setDataList(res.content);
+      }
+      
     };
 
     fetchData();
@@ -163,7 +166,8 @@ export function Board() {
                   piece.title,
                   piece.text,
                   piece.image,
-                  username
+                  username,
+                  piece.url
                 );
               })}
             </CardColumns>

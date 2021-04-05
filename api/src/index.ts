@@ -91,6 +91,7 @@ app.post('/content', async (req: IUserRequest, res: Response) => {
     url: block_url,
   });
 
+  console.log(newContent);
   await newContent.save();
 
   return res.status(201).json(newContent);

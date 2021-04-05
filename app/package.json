@@ -15,6 +15,7 @@
     "bootstrap": "^4.6.0",
     "expo": "^40.0.1",
     "expo-status-bar": "~1.0.3",
+    "firebase": "^8.3.2",
     "holderjs": "^2.9.9",
     "react": "16.13.1",
     "react-bootstrap": "^1.5.2",

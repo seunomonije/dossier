@@ -95,7 +95,11 @@ export function useProvideAuth() {
   useEffect(() => {
     const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        console.log(user);
+        user.getIdToken().then((res) => {
+          console.log(res);
+          return res;
+        });
+
         setUser(user);
       }
     });

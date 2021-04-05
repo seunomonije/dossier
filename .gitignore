@@ -20,3 +20,7 @@ env/
 # Pycache
 __pycache__/
 *.pyc
+node_modules
+
+#Service Account
+api/src/serviceAccount.json

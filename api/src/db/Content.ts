@@ -23,6 +23,10 @@ const contentSchema = new Schema(
       type: String,
       required: true,
     },
+    text: {
+      type: String,
+      required: true,
+    },
     user_id: {
       text: String,
       required: true,
@@ -39,4 +43,7 @@ contentSchema.statics.newContent = (attr: IContent) => {
   return new Content(attr);
 };
 
-const Content = mongoose.model<any, contentModelInterface>('Content', contentSchema);
+const Content = mongoose.model<any, contentModelInterface>(
+  'Content',
+  contentSchema
+);

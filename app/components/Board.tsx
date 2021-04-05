@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { Grid, TextField, Typography } from '@material-ui/core';
 import Button from 'react-bootstrap/Button';
@@ -29,7 +29,12 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     inputComponent: {
       marginLeft: theme.spacing(2),
+      marginTop: theme.spacing(1),
       backgroundColor: '#4299E1',
+    },
+    textComponent: {
+      marginLeft: theme.spacing(2),
+      marginTop: theme.spacing(1),
     },
     title: {
       color: '#4A5568',
@@ -43,9 +48,29 @@ export function Board() {
   const classes = useStyles();
 
   const { currentUser, logout } = useAuth();
+  const [dataList, setDataList] = useState<any>([]);
+  const username = currentUser
+    ? currentUser.displayName.trim().toLowerCase()
+    : '';
+  const onSubmit = async () => {
+    const token = await currentUser.getIdToken();
+    const res: any = await fetch('http://localhost:5000/content', {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        authorization: token,
+      },
+      method: 'POST',
+      body: JSON.stringify({
+        url: moduleLink,
+      }),
+    })
+      .then((res) => res.json())
+      .catch((err) => console.error(err));
 
-  const onSubmit = () => {
-    window.location.href = 'https://www.youtube.com/embed/uJqzHkEe0RE';
+    let newList = [...dataList];
+    newList.push(res);
+    setDataList(newList);
   };
 
   const [addButton, setAddButton] = React.useState<boolean>(false);
@@ -73,63 +98,78 @@ export function Board() {
     null,
   ];
 
-  let cards = [];
-  for (let i = 0; i < 8; i++) {
-    let random = Math.floor(Math.random() * randomPhrases.length);
-    let random1 = Math.floor(Math.random() * randomTextContent.length);
-    let random2 = Math.floor(Math.random() * picOrNah.length);
-    cards.push(
-      GenerateCard(
-        randomPhrases[random],
-        randomTextContent[random1],
-        picOrNah[random2],
-        'seunomonije'
-      )
-    );
-  }
-
   useEffect(() => {
-    const url = '';
+    const fetchData = async () => {
+      const token = await currentUser.getIdToken();
+      const res: any = await fetch('http://localhost:5000/content', {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          authorization: token,
+        },
+        method: 'GET',
+      })
+        .then((res) => res.json())
+        .catch((err) => console.error(err));
+
+      setDataList(res.content);
+    };
+
+    fetchData();
   }, []);
 
   return (
     <>
-      {/* Josh's stuff */}
-      <AppBar></AppBar>
-      <Typography variant='caption' className={classes.title}>
-        Welcome {currentUser.displayName}
-      </Typography>
+      {dataList && (
+        <>
+          <AppBar></AppBar>
+          <Typography variant='caption' className={classes.title}>
+            Welcome {currentUser.displayName}
+          </Typography>
 
-      <Button
-        onClick={() => {
-          setAddButton(!addButton);
-        }}
-        className={classes.button}
-      >
-        Add Module to your Board
-      </Button>
-
-      {addButton && (
-        <Grid container justify='center' className={classes.newInput}>
-          <TextField
-            variant='outlined'
-            placeholder='Link to Module'
-            label='Link to Module'
-            value={moduleLink}
-            onChange={(event) => {
-              setModuleLink(event.target.value);
+          <Button
+            onClick={() => {
+              setAddButton(!addButton);
             }}
-          />
-          <Button onClick={onSubmit} className={classes.inputComponent}>
-            Add Module
+            className={classes.button}
+          >
+            Add Module to your Board
           </Button>
-        </Grid>
-      )}
 
-      {/* Cards */}
-      <div style={content}>
-        <CardColumns>{cards}</CardColumns>
-      </div>
+          {addButton && (
+            <Grid container justify='center' className={classes.newInput}>
+              <TextField
+                variant='outlined'
+                placeholder='Link to Module'
+                label='Link to Module'
+                value={moduleLink}
+                className={classes.textComponent}
+                onChange={(event) => {
+                  setModuleLink(event.target.value);
+                }}
+              />
+              <Button onClick={onSubmit} className={classes.inputComponent}>
+                Add Module
+              </Button>
+            </Grid>
+          )}
+
+          {/* Cards */}
+          <div style={content}>
+            <CardColumns>
+              {dataList.map((piece: any) => {
+                console.log(piece);
+                return GenerateCard(
+                  piece.title,
+                  piece.text,
+                  piece.image,
+                  username
+                );
+              })}
+            </CardColumns>
+          </div>
+        </>
+      )}
     </>
   );
 }

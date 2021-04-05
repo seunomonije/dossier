@@ -2,9 +2,11 @@ import mongoose, { Schema } from 'mongoose';
 
 interface IContent {
   module_id: string;
+  user_id: string;
   title: string;
   text: string;
   image?: string;
+  url: string;
 }
 
 interface contentDoc extends IContent, mongoose.Document {}
@@ -19,6 +21,10 @@ const contentSchema = new Schema(
       type: String,
       required: true,
     },
+    user_id: {
+      type: String,
+      required: true,
+    },
     title: {
       type: String,
       required: true,
@@ -27,13 +33,13 @@ const contentSchema = new Schema(
       type: String,
       required: true,
     },
-    user_id: {
-      text: String,
-      required: true,
-    },
     image: {
       type: String,
       required: false,
+    },
+    url: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }
@@ -43,7 +49,7 @@ contentSchema.statics.newContent = (attr: IContent) => {
   return new Content(attr);
 };
 
-const Content = mongoose.model<any, contentModelInterface>(
+export const Content = mongoose.model<any, contentModelInterface>(
   'Content',
   contentSchema
 );

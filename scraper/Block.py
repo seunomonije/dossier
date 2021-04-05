@@ -74,3 +74,7 @@ class Block:
 
   def print_block(self):
     print(self.data)
+
+  def get_json(self):
+    return self.data
+

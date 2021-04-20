@@ -1,107 +1,87 @@
-import React, { useEffect, useState } from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { Grid, TextField, Typography } from '@material-ui/core';
-import Button from 'react-bootstrap/Button';
-import Card from 'react-bootstrap/Card';
-import CardColumns from 'react-bootstrap/CardColumns';
-import { GenerateCard } from './GenerateCard';
-import 'holderjs';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Dimensions, FlatList } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Fab,
+  Text,
+  Div,
+  Button,
+  Header,
+  Avatar,
+  Input,
+  Overlay,
+  Image,
+} from 'react-native-magnus';
 import { useAuth } from '../hooks/use-auth';
-import AppBar from './AppBar';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const CONTENT_WIDTH = '80%';
-const CONTENT_MARGINS = '5vh';
+const width = Dimensions.get('window').width;
 
-const content = {
-  width: '70%',
-  margin: '5vh 8vh',
-};
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    button: {
-      marginTop: theme.spacing(2),
-      backgroundColor: '#4299E1',
-    },
-    newInput: {
-      marginTop: theme.spacing(2),
-    },
-    inputComponent: {
-      marginLeft: theme.spacing(2),
-      marginTop: theme.spacing(1),
-      backgroundColor: '#4299E1',
-    },
-    textComponent: {
-      marginLeft: theme.spacing(2),
-      marginTop: theme.spacing(1),
-    },
-    title: {
-      color: '#4A5568',
-      fontSize: 24,
-      marginTop: theme.spacing(2),
-    },
-  })
-);
-
-export function Board() {
-  const classes = useStyles();
-
-  const { currentUser, logout } = useAuth();
+export default function Board({ navigation }: any) {
+  const { user, signout } = useAuth();
   const [dataList, setDataList] = useState<any>([]);
-  const username = currentUser
-    ? currentUser.displayName.trim().toLowerCase()
-    : '';
-  const onSubmit = async () => {
-    const token = await currentUser.getIdToken();
-    const res: any = await fetch('http://localhost:5000/content', {
+
+  const [menuHidden, setMenuHidden] = useState<boolean>(false);
+  const [loggingOut, setLoggingOut] = useState<boolean>(false);
+
+  const logout = async (): Promise<void> => {
+    setLoggingOut(true);
+    const user = await signout();
+  };
+
+  const addBoard = async () => {
+    const token = await user.getIdToken();
+    const url = 'http://localhost:5000/board';
+
+    const data = {
+      title: '',
+    };
+
+    const res: any = await fetch(url, {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
         authorization: token,
       },
       method: 'POST',
-      body: JSON.stringify({
-        url: moduleLink,
-      }),
+      body: JSON.stringify(data),
     })
       .then((res) => res.json())
       .catch((err) => console.error(err));
 
-    let newList = [...dataList];
-    newList.push(res);
+    const newList = [...dataList, res.content];
     setDataList(newList);
   };
 
-  const [addButton, setAddButton] = React.useState<boolean>(false);
-  const [moduleLink, setModuleLink] = React.useState<string>('');
+  const shareBoard = async (board_id: string) => {
+    const token = await user.getIdToken();
+    const url = 'http://localhost:5000/board';
 
-  // This random data will be changes with data retrieved from server.
-  const randomPhrases = [
-    'This is a random title',
-    'This is alright',
-    "I'm still going",
-    'We have to randomize the size',
-    'random size = more present',
-  ];
+    const data = {
+      user_email: '',
+      board_id: board_id,
+    };
 
-  const randomTextContent = [
-    'On the other hand, the following is a valid comment, pulled directly from a working application.',
-    'My name is Seun and i like to code',
-    "This QCHack hackathon is alot of work, its getting annoying because Yale is doing all the work, but it's still fun nonetheless",
-  ];
-
-  const picOrNah = [
-    'https://picsum.photos/400',
-    'https://picsum.photos/400/200',
-    'https://picsum.photos/300',
-    null,
-  ];
+    const res: any = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        authorization: token,
+      },
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .catch((err) => console.error(err));
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const token = await currentUser.getIdToken();
-      const res: any = await fetch('http://localhost:5000/content', {
+    const fetchData = async (): Promise<void> => {
+      const token = await user.getIdToken();
+      console.log('Starting');
+      const res: any = await fetch('http://localhost:5000/boards', {
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
@@ -118,58 +98,130 @@ export function Board() {
     fetchData();
   }, []);
 
+  const _renderItem = ({ item }: any) => {
+    return (
+      <TouchableOpacity
+        onPress={() => navigation.push('Module', { boardId: item._id })}
+      >
+        <Div
+          w={150}
+          p={5}
+          alignItems='center'
+          justifyContent='center'
+          bg='white'
+          shadow='md'
+          m={10}
+          rounded='lg'
+          h={150}
+        >
+          <Div ml={5}>
+            <Text
+              style={{ fontFamily: 'Avenir' }}
+              color='gray900'
+              fontWeight='bold'
+            >
+              {item.title}
+            </Text>
+          </Div>
+        </Div>
+      </TouchableOpacity>
+    );
+  };
+
   return (
-    <>
-      {dataList && (
-        <>
-          <AppBar></AppBar>
-          <Typography variant='caption' className={classes.title}>
-            Welcome {currentUser.displayName}
-          </Typography>
-
-          <Button
-            onClick={() => {
-              setAddButton(!addButton);
-            }}
-            className={classes.button}
+    <View style={styles.container}>
+      <SafeAreaView style={{ flex: 1, marginTop: 0, top: 0 }}>
+        <Header
+          mb={0}
+          p='sm'
+          borderBottomWidth={1}
+          borderBottomColor='gray200'
+          alignment='center'
+          shadow='none'
+          suffix={
+            <TouchableOpacity
+              style={{
+                marginRight: 10,
+                marginTop: 0,
+                backgroundColor: 'gray100',
+              }}
+              onPress={() => setMenuHidden(!menuHidden)}
+            >
+              <Avatar bg='red300' size={32} color='red800'>
+                <Image h={15} w={15} source={require('../assets/person.png')} />
+              </Avatar>
+            </TouchableOpacity>
+          }
+        >
+          <Text
+            fontSize={18}
+            fontWeight='bold'
+            pt='sm'
+            style={{ fontFamily: 'Avenir' }}
           >
-            Add Module to your Board
+            Boards
+          </Text>
+        </Header>
+        <Overlay visible={menuHidden} p='xl'>
+          <Button
+            bg='#F3F4F6'
+            loading={loggingOut}
+            block
+            onPress={async () => {
+              setLoggingOut(true);
+              await logout();
+            }}
+          >
+            <Div rounded='sm'>
+              <Text
+                fontSize='lg'
+                fontWeight='bold'
+                style={{ fontFamily: 'Avenir' }}
+              >
+                Logout
+              </Text>
+            </Div>
           </Button>
+          <Button
+            bg='#FEE2E2'
+            block
+            mt={10}
+            onPress={() => setMenuHidden(!menuHidden)}
+          >
+            <Div rounded='sm'>
+              <Text
+                fontSize='lg'
+                fontWeight='bold'
+                style={{ fontFamily: 'Avenir' }}
+              >
+                Cancel
+              </Text>
+            </Div>
+          </Button>
+        </Overlay>
 
-          {addButton && (
-            <Grid container justify='center' className={classes.newInput}>
-              <TextField
-                variant='outlined'
-                placeholder='Link to Module'
-                label='Link to Module'
-                value={moduleLink}
-                className={classes.textComponent}
-                onChange={(event) => {
-                  setModuleLink(event.target.value);
-                }}
-              />
-              <Button onClick={onSubmit} className={classes.inputComponent}>
-                Add Module
-              </Button>
-            </Grid>
+        <Div flex={1} m={20} w={width - 20} alignItems='center'>
+          {dataList && (
+            <FlatList
+              data={dataList}
+              contentContainerStyle={{ alignContent: 'center' }}
+              //   @ts-ignore
+              renderItem={_renderItem}
+              keyExtractor={(item) => item._id}
+              numColumns={2}
+              showsVerticalScrollIndicator={false}
+            />
           )}
-
-          {/* Cards */}
-          <div style={content}>
-            <CardColumns>
-              {dataList.map((piece: any) => {
-                console.log(piece);
-                return GenerateCard(
-                  piece.title,
-                  piece.text,
-                  piece.image,
-                  username
-                );
-              })}
-            </CardColumns>
-          </div>
-        </>
-      )}
-    </>
+        </Div>
+      </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    width: width,
+  },
+});

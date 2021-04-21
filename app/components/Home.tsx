@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
+import { StyleSheet, View, Dimensions, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Fab,
@@ -18,6 +18,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import LottieView from 'lottie-react-native';
 import Animated from 'react-native-reanimated';
 import BottomSheet from 'reanimated-bottom-sheet';
+import { AntDesign } from '@expo/vector-icons';
 
 const width = Dimensions.get('window').width;
 
@@ -28,8 +29,12 @@ export default function Home({ navigation, route }: any) {
   const [menuHidden, setMenuHidden] = useState<boolean>(false);
   const [loggingOut, setLoggingOut] = useState<boolean>(false);
 
-  const shareRef = useRef<BottomSheet>();
-  const moduleRef = useRef<BottomSheet>();
+  const [contentURL, setUrl] = useState<string>('');
+  const [share, setShare] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const shareRef = useRef<any>();
+  const moduleRef = useRef<any>();
 
   const logout = async (): Promise<void> => {
     setLoggingOut(true);
@@ -37,11 +42,13 @@ export default function Home({ navigation, route }: any) {
   };
 
   const addContent = async () => {
+    setLoading(true);
     const token = await user.getIdToken();
     const url = 'http://localhost:5000/content';
 
+    console.log(url);
     const data = {
-      url: '',
+      url: contentURL,
       board_id: route.params.boardId,
     };
 
@@ -55,10 +62,57 @@ export default function Home({ navigation, route }: any) {
       body: JSON.stringify(data),
     })
       .then((res) => res.json())
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        Alert.alert(err.toString(), '', [{ text: 'Ok' }]);
+        console.error(err);
+        setLoading(false);
+        return;
+      });
 
-    const newList = [...dataList, res.content];
-    setDataList(newList);
+    console.log('Content', res);
+    if (res) {
+      setDataList([...dataList, res]);
+    }
+
+    setLoading(false);
+    setUrl('');
+    moduleRef.current.snapTo(1);
+  };
+
+  const shareBoard = async () => {
+    setLoading(true);
+    console.log(route.params.boardId);
+    const token = await user.getIdToken();
+    const url = 'http://localhost:5000/shareboard';
+
+    const data = {
+      user_email: share,
+      board_id: route.params.boardId,
+    };
+
+    const res: any = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        authorization: token,
+      },
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+      .then((res) => {
+        return res.json();
+      })
+      .catch((err) => {
+        Alert.alert(err.toString(), '', [{ text: 'Ok' }]);
+        console.error(err);
+        setLoading(false);
+        return;
+      });
+
+    setLoading(false);
+    Alert.alert('Your board has been shared', '', [{ text: 'Ok' }]);
+    setShare('');
+    shareRef.current.snapTo(1);
   };
 
   useEffect(() => {
@@ -116,8 +170,18 @@ export default function Home({ navigation, route }: any) {
         focusBorderColor='blue500'
         placeholder='you@example.com'
         style={{ fontFamily: 'Avenir' }}
+        onChangeText={setShare}
+        value={share}
       />
-      <Button bg='blue500' block mx='xl' mt='sm'>
+      <Button
+        bg='blue500'
+        block
+        mx='xl'
+        mt='sm'
+        onPress={shareBoard}
+        disabled={share.trim() === ''}
+        loading={loading}
+      >
         <Text
           fontSize='lg'
           fontWeight='bold'
@@ -155,8 +219,18 @@ export default function Home({ navigation, route }: any) {
         focusBorderColor='blue500'
         placeholder='https://google.com'
         style={{ fontFamily: 'Avenir' }}
+        onChangeText={setUrl}
+        value={contentURL}
       />
-      <Button bg='blue500' block mx='xl' mt='sm'>
+      <Button
+        bg='blue500'
+        block
+        mx='xl'
+        mt='sm'
+        onPress={addContent}
+        disabled={contentURL.trim() === ''}
+        loading={loading}
+      >
         <Text
           fontSize='lg'
           fontWeight='bold'
@@ -303,9 +377,15 @@ export default function Home({ navigation, route }: any) {
             </Div>
           </Div>
         ) : (
-          <Cards list={dataList} />
+          <>{dataList && <Cards list={dataList} />}</>
         )}
-        <Fab bg='blue500' h={50} w={50}>
+        <Fab
+          bg='blue500'
+          h={50}
+          w={50}
+          icon={<AntDesign name='plus' size={15} color='white' />}
+          activeIcon={<AntDesign name='close' size={15} color='white' />}
+        >
           <Button
             p='none'
             bg='transparent'
@@ -315,14 +395,38 @@ export default function Home({ navigation, route }: any) {
             <Div rounded='sm' bg='white' p='sm'>
               <Text fontSize='md'>Add Module</Text>
             </Div>
-            <Image
-              source={require('../assets/module.png')}
-              bg='gray200'
+            <Div
               h={50}
               w={50}
               rounded='circle'
               ml='md'
-            />
+              bg='white'
+              alignItems='center'
+              justifyContent='center'
+            >
+              <AntDesign name='addfolder' size={20} color='#1D4ED8' />
+            </Div>
+          </Button>
+          <Button
+            p='none'
+            bg='transparent'
+            justifyContent='flex-end'
+            onPress={() => shareRef.current.snapTo(0)}
+          >
+            <Div rounded='sm' bg='white' p='sm'>
+              <Text fontSize='md'>Share Board</Text>
+            </Div>
+            <Div
+              h={50}
+              w={50}
+              rounded='circle'
+              ml='md'
+              bg='white'
+              alignItems='center'
+              justifyContent='center'
+            >
+              <AntDesign name='export' size={20} color='#1D4ED8' />
+            </Div>
           </Button>
         </Fab>
       </SafeAreaView>

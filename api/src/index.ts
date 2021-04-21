@@ -1,11 +1,13 @@
 // @ts-nocheck
 import express, { NextFunction, Request, Response } from 'express';
 import { connect } from './db/db';
-import { User } from './db/User';
 import { Content } from './db/Content';
 import axios from 'axios';
-const cors = require('cors');
 import firebase from './firebase';
+import { Board } from './db/Board';
+import { BoardUser } from './db/BoardUser';
+const cors = require('cors');
+import { ObjectID } from 'mongodb';
 // import * as cors from 'cors';
 
 connect();
@@ -64,10 +66,9 @@ app.get('/', (req: IUserRequest, res: Response) => {
 });
 
 app.post('/content', async (req: IUserRequest, res: Response) => {
-  console.log('Starting');
-
   const baseURL = 'http://localhost:5050/scraper?url=';
-  const { url } = req.body;
+  console.log(req.body);
+  const { url, board_id } = req.body;
   const reqURL = baseURL + url;
   const result = await axios
     .get(reqURL)
@@ -83,7 +84,7 @@ app.post('/content', async (req: IUserRequest, res: Response) => {
   const { uid } = req.user;
 
   const newContent = Content.newContent({
-    module_id: '0',
+    board_id: board_id,
     title: block_title ? block_title : 'No title available',
     text: block_description ? block_description : 'No text available',
     image: block_image_url || null,
@@ -91,24 +92,131 @@ app.post('/content', async (req: IUserRequest, res: Response) => {
     url: block_url,
   });
 
-  await newContent.save();
+  const savedContent = await newContent.save();
 
-  return res.status(201).json(newContent);
+  return res.status(201).json(savedContent);
 });
 
-app.get('/content', (req: IUserRequest, res: Response) => {
+app.get('/content/:board_id', async (req: IUserRequest, res: Response) => {
+  const { board_id } = req.params;
+
+  try {
+    const result = await Content.find({ board_id: board_id });
+    return res.status(200).json({
+      content: result,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error fetching data',
+    });
+  }
+});
+
+// Get the boards a user has
+app.get('/boards', async (req: IUserRequest, res: Response) => {
   const { uid } = req.user;
 
-  Content.find({ user_id: uid }, (err, result) => {
-    if (err) {
-      return res.status(500).json({
-        message: 'Error fetching data',
+  let boards = [];
+  // Find the boards that a user is subscribed to
+  try {
+    const boardUsers = await BoardUser.find({ user_id: uid }).exec();
+    boards = boardUsers;
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error fetching data 1',
+    });
+  }
+
+  let boardIds = [];
+  // If user has no board,
+  if (boards.length === 0) {
+    const newBoard = Board.newBoard({
+      user_id: uid,
+      private: false,
+      title: 'Base board',
+    });
+
+    const newBoardObj = await newBoard.save();
+    console.log(newBoardObj);
+    boardIds = [ObjectID(newBoardObj._id)];
+
+    const newBoardUser = BoardUser.newBoardUser({
+      user_id: uid,
+      board_id: newBoardObj._id,
+    });
+
+    await newBoardUser.save();
+  } else {
+    boardIds = boards.map((item) => ObjectID(item.board_id));
+  }
+
+  console.log('BoardIds', boardIds);
+  // Find and return all the boards with specified id
+  try {
+    const boards = await Board.find({ _id: { $in: boardIds } }).exec();
+    return res.status(200).json({
+      content: boards,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      message: 'Error fetching data 2',
+    });
+  }
+});
+
+// Create a new board
+app.post('/board', async (req: IUserRequest, res: Response) => {
+  const { title } = req.body;
+  const { uid } = req.user;
+
+  const board = Board.newBoard({
+    user_id: uid,
+    private: false,
+    title: title,
+  });
+
+  const savedBoard = await board.save();
+
+  const newBoardUser = BoardUser.newBoardUser({
+    user_id: uid,
+    board_id: savedBoard._id,
+  });
+
+  await newBoardUser.save();
+
+  return res.status(201).json({
+    content: savedBoard,
+  });
+});
+
+// Share board
+app.post('/shareboard', async (req: IUserRequest, res: Response) => {
+  const { user_email, board_id } = req.body;
+
+  const user_id = await firebase
+    .auth()
+    .getUserByEmail(user_email)
+    .then((res) => {
+      console.log(res);
+      return res.uid;
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: 'Cannot complete request at this time',
       });
-    } else {
-      return res.status(200).json({
-        content: result,
-      });
-    }
+    });
+
+  console.log('User Id', user_id);
+  const newBoardUser = BoardUser.newBoardUser({
+    user_id: user_id,
+    board_id: board_id,
+  });
+
+  const savedBU = await newBoardUser.save();
+  console.log('Board User', savedBU);
+
+  return res.status(201).json({
+    content: 'Success',
   });
 });
 

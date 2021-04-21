@@ -4,11 +4,13 @@ const schema = mongoose.Schema;
 interface IBoard {
   user_id: string;
   private: boolean;
+  title: string;
 }
 
 interface boardDoc extends mongoose.Document {
   user_id: string;
   private: boolean;
+  title: string;
 }
 
 interface boardModelInterface extends mongoose.Model<boardDoc> {
@@ -18,6 +20,10 @@ interface boardModelInterface extends mongoose.Model<boardDoc> {
 const boardSchema = new schema(
   {
     user_id: {
+      type: String,
+      required: true,
+    },
+    title: {
       type: String,
       required: true,
     },

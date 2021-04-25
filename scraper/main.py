@@ -3,7 +3,7 @@ from Block import Block
 def main():
   url = input('Enter a url: ')
   block = Block(url)
-  block.print_block()
+  print(block)
 
 if __name__ == '__main__':
   # TEST

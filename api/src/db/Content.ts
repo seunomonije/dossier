@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 
 interface IContent {
-  module_id: string;
+  board_id: string;
   user_id: string;
   title: string;
   text: string;
@@ -17,7 +17,7 @@ interface contentModelInterface extends mongoose.Model<contentDoc> {
 
 const contentSchema = new Schema(
   {
-    module_id: {
+    board_id: {
       type: String,
       required: true,
     },

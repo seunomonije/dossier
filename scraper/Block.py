@@ -5,6 +5,7 @@ from enum import Enum
 from BlockInfo import BlockInfo
 from hackernews.BlockFromHackerNewsLink import BlockFromHackerNewsLink
 from twitter.BlockFromTwitterURL import BlockFromTwitterURL
+from tiktok.BlockFromTikTokURL import BlockFromTikTokURL
 from MetaFromArbitraryURL import MetaFromArbitraryURL
 
 
@@ -12,13 +13,15 @@ class Source(Enum):
   ANY = 1
   HACKER_NEWS = 2
   TWITTER = 3
+  TIKTOK = 4
 
 class Block:
   # The tags need to be in order of 'block_title', 'block_description', 'block_image_url', 'block_url'
   possible_raw_json = {
     Source.ANY: [None, None, None, None],
     Source.HACKER_NEWS: ['title', None, None, 'url'],
-    Source.TWITTER: ['name', 'text', None, None]
+    Source.TWITTER: ['name', 'text', None, None],
+    Source.TIKTOK: ['author_name', 'title', 'thumbnail_url', None]
   }
 
   def __init__(self, url):
@@ -29,22 +32,22 @@ class Block:
     return str(self.data)
 
   def create_block(self, block_type, url):
+    call_functions = {
+      Source.HACKER_NEWS: BlockFromHackerNewsLink.get_json,
+      Source.TWITTER: BlockFromTwitterURL.get_json,
+      Source.TIKTOK: BlockFromTikTokURL.get_json,
+    }
+    
     if not block_type:
       block_info = BlockInfo(Source.ANY, url, None)
       result = self.__create_block_dict(block_info)
       return result
 
-    if block_type == Source.HACKER_NEWS:
-      json = BlockFromHackerNewsLink.get_json(url)
-      block_info = BlockInfo(block_type, url, json)
-      result = self.__create_block_dict(block_info)
-      return result
-
-    if block_type == Source.TWITTER:
-      json = BlockFromTwitterURL.get_json(url)
-      block_info = BlockInfo(block_type, url, json)
-      result = self.__create_block_dict(block_info)
-      return result
+    matching_func = call_functions.get(block_type)
+    json = matching_func(url)
+    block_info = BlockInfo(block_type, url, json)
+    result = self.__create_block_dict(block_info)
+    return result
 
   def __create_block_dict(self, block_info):
     result_dict = {
@@ -86,6 +89,7 @@ class Block:
     possible_types = {
       'news': Source.HACKER_NEWS,
       'twitter': Source.TWITTER,
+      'tiktok': Source.TIKTOK,
     }
 
     # Make sure we're always starting at the same place
@@ -93,9 +97,14 @@ class Block:
       url = url[8:]
     elif url[0:7] == 'http://':
       url = url[7:]
-    
+
     arr = url.split('.')
-    return possible_types.get(arr[0])
+    site_name = arr.pop(0)
+    # Go until we find the site_name we want. Prob refactor later
+    while site_name not in possible_types.keys():
+      site_name = arr.pop(0)
+
+    return possible_types.get(site_name)
 
   # Needed for the case that there's nested tags
   # Stops at the first occurence of the desired tag

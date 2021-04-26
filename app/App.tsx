@@ -1,44 +1,89 @@
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Switch, Route, Redirect } from 'react-router-dom';
-import { BrowserRouter } from 'react-router-dom';
-import { Board } from './components/Board';
-import { SignUpPage } from './components/SignUpPage';
-import { SignInPage } from './components/SignInPage';
-import { PrivateRoute } from './components/PrivateRoute';
-import { ProvideAuth } from './hooks/use-auth';
+import { NavigationContainer } from '@react-navigation/native';
+import { ThemeProvider, Div } from 'react-native-magnus';
+import Login from './components/Login';
+import Home from './components/Home';
+import SignUp from './components/SignUp';
+import Board from './components/Board';
+import { createStackNavigator } from '@react-navigation/stack';
+import { UseProvideAuth, useAuth } from './hooks/use-auth';
+import * as Font from 'expo-font';
+// import { RootStackScreen } from './navigation/navigation';
 
-export default function App() {
+const theme = {
+  colors: {
+    blue500: '#1D4ED8',
+  },
+};
+
+// Create the Auth Stack
+const AuthStack = createStackNavigator();
+const AuthStackScreen = (): React.ReactElement => (
+  <AuthStack.Navigator headerMode='none'>
+    <AuthStack.Screen
+      name='Login'
+      component={Login}
+      options={{ headerShown: false }}
+    />
+    <AuthStack.Screen
+      name='SignUp'
+      component={SignUp}
+      options={{ title: 'Create Account' }}
+    />
+  </AuthStack.Navigator>
+);
+
+// Create Main Stack
+const MainStack = createStackNavigator();
+const MainStackScreen = (): React.ReactElement => (
+  <MainStack.Navigator headerMode='none'>
+    <MainStack.Screen
+      name='Board'
+      component={Board}
+      options={{ headerShown: false }}
+    />
+    <MainStack.Screen
+      name='Module'
+      component={Home}
+      options={{ title: 'Module' }}
+    />
+  </MainStack.Navigator>
+);
+
+// Create the root stack
+const RootStack = createStackNavigator();
+export const RootStackScreen = () => {
+  const { user } = useAuth();
+
   return (
-    // @ts-ignore
-    <BrowserRouter>
-      <View style={styles.container}>
-        <ProvideAuth>
-          <Text></Text>
-          <Switch>
-            <PrivateRoute path='/home' component={Board} exact />
-            <Route path='/signup' component={SignUpPage} />
-            <Route path='/signin' component={SignInPage} />
-            <Route
-              path='/'
-              component={() => <Redirect to='/home'></Redirect>}
-            />
-          </Switch>
-        </ProvideAuth>
-      </View>
-    </BrowserRouter>
+    <RootStack.Navigator headerMode='none'>
+      {user ? (
+        <RootStack.Screen
+          name='App'
+          component={MainStackScreen}
+          options={{
+            animationEnabled: false,
+          }}
+        />
+      ) : (
+        <RootStack.Screen
+          name='Auth'
+          component={AuthStackScreen}
+          options={{
+            animationEnabled: false,
+          }}
+        />
+      )}
+    </RootStack.Navigator>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    //justifyContent: 'center',
-  },
-  alignLeft: {
-    textAlign: 'left',
-  },
-});
+export default () => (
+  <UseProvideAuth>
+    <ThemeProvider theme={theme}>
+      <NavigationContainer>
+        <RootStackScreen />
+      </NavigationContainer>
+    </ThemeProvider>
+  </UseProvideAuth>
+);

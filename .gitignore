@@ -23,4 +23,5 @@ __pycache__/
 node_modules
 
 #Service Account
-api/src/serviceAccount.json
+api/serviceAccount.json
+node_modules

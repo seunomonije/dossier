@@ -1,4 +1,10 @@
 import firebase from 'firebase-admin';
-const serviceAccount = require('./serviceAccount.json');
+const serviceAccount = require('../serviceAccount.json');
 
-export default firebase.initializeApp(serviceAccount);
+if (!firebase.apps.length) {
+  firebase.initializeApp({
+    credential: firebase.credential.cert(serviceAccount),
+  });
+}
+
+export default firebase;

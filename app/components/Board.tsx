@@ -89,7 +89,9 @@ export default function Board({ navigation }: any) {
         .then((res) => res.json())
         .catch((err) => console.error(err));
 
-      setDataList(res.content);
+      if (res) {
+        setDataList(res.content);
+      }
     };
 
     fetchData();

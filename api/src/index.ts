@@ -92,6 +92,7 @@ app.post('/content', async (req: IUserRequest, res: Response) => {
     url: block_url,
   });
 
+<<<<<<< HEAD
   const savedContent = await newContent.save();
 
   return res.status(201).json(savedContent);
@@ -99,6 +100,10 @@ app.post('/content', async (req: IUserRequest, res: Response) => {
 
 app.get('/content/:board_id', async (req: IUserRequest, res: Response) => {
   const { board_id } = req.params;
+=======
+  console.log(newContent);
+  await newContent.save();
+>>>>>>> 612113928fedebcf5dd5eb7290c34236f30bdad2
 
   try {
     const result = await Content.find({ board_id: board_id });

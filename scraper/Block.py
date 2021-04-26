@@ -32,34 +32,23 @@ class Block:
     return str(self.data)
 
   def create_block(self, block_type, url):
-    """
-    block_types = {
+    
+    call_functions = {
       Source.HACKER_NEWS: BlockFromHackerNewsLink.get_json,
-      Source.TWITTER: BlockFromTwitterURL.
+      Source.TWITTER: BlockFromTwitterURL.get_json,
+      Source.TIKTOK: BlockFromTikTokURL.get_json,
     }
-    """
+    
     if not block_type:
       block_info = BlockInfo(Source.ANY, url, None)
       result = self.__create_block_dict(block_info)
       return result
 
-    if block_type == Source.HACKER_NEWS:
-      json = BlockFromHackerNewsLink.get_json(url)
-      block_info = BlockInfo(block_type, url, json)
-      result = self.__create_block_dict(block_info)
-      return result
-
-    if block_type == Source.TWITTER:
-      json = BlockFromTwitterURL.get_json(url)
-      block_info = BlockInfo(block_type, url, json)
-      result = self.__create_block_dict(block_info)
-      return result
-
-    if block_type == Source.TIKTOK:
-      json = BlockFromTikTokURL.get_json(url)
-      block_info = BlockInfo(block_type, url, json)
-      result = self.__create_block_dict(block_info)
-      return result
+    matching_func = call_functions.get(block_type)
+    json = matching_func(url)
+    block_info = BlockInfo(block_type, url, json)
+    result = self.__create_block_dict(block_info)
+    return result
 
   def __create_block_dict(self, block_info):
     result_dict = {

@@ -32,7 +32,6 @@ class Block:
     return str(self.data)
 
   def create_block(self, block_type, url):
-    
     call_functions = {
       Source.HACKER_NEWS: BlockFromHackerNewsLink.get_json,
       Source.TWITTER: BlockFromTwitterURL.get_json,
